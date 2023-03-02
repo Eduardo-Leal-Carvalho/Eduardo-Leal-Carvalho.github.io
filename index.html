@@ -52,7 +52,7 @@
     <div class="col text-center">
       <img src="Imagens/senac.png">
     </div>
-    <form method="POST" action="index.php">
+    <form method="POST" action="principal.php">
       <div class="row">
         <div class="col">
           <div class="form-group">
