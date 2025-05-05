@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <script defer src="js/phaser.min.js"></script>
+    <!-- player.js e tutorial.js agora são módulos -->
+    <script type="module" src="js/tutorialScenes/tutorial.js"></script>
+    <script type="module" src="js/tutorialScenes/tutorialRun.js"></script>
+    <script type="module" src="js/main.js"></script>
+</head>
+
+<body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        @font-face {
+            font-family: "Pixelify Sans";
+            src: url('fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf') format('truetype'),
+                        }
+
+        .prompt-padding {
+            background-color: #6e4a48;
+            width: 30%;
+            height: 100%;
+            position: absolute;
+            left: 70%;
+        }
+
+        .prompt {
+            background-color: #25131a;
+            margin-top: 4%;
+            margin-left: 5%;
+            width: 90%;
+            height: 95%;
+        }
+
+        #inputCode {
+            background-color: #25131a;
+            color: white;
+            width: 100%;
+            height: 100%;
+            font-size: 45px;
+        }
+
+        #actionButton {
+            background-color: orange;
+            width: 30%;
+            height: 10%;
+            position: absolute;
+            top: 90%;
+            left: 70%;
+            font-size: 35px;
+        }
+
+        .playerInfo {
+            position: absolute;
+            height: 150px;
+            width: 450px;
+            left: 25px;
+            top: 25px
+        }
+
+        .playerProfilePic {
+            position: absolute;
+            width: 40%;
+            height: 100%;
+        }
+
+        .playerProfilePic>img {
+            height: 100%;
+        }
+
+        .playerHealthBarContainer {
+            width: 60%;
+            height: 50%;
+            margin-left: 40%;
+        }
+
+        .playerHealthBarBack {
+            position: relative;
+            top: 25%;
+            background-color: gray;
+            width: 100%;
+            height: 40%;
+            border-radius: 5px;
+        }
+
+        .playerHealthBarFront {
+            background-color: red;
+            width: 75%;
+            /*health amount*/
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .playerManaBarContainer {
+            width: 60%;
+            height: 50%;
+            margin-left: 40%;
+        }
+
+        .playerManaBarBack {
+            position: relative;
+            top: 25%;
+            background-color: gray;
+            width: 100%;
+            height: 40%;
+            border-radius: 5px;
+        }
+
+        .playerManaBarFront {
+            background-color: aqua;
+            width: 75%;
+            /*health amount*/
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .enemyHealthBarBack {
+            position: absolute;
+            top: 5%;
+            left: 500px;
+            background-color: gray;
+            width: 600px;
+            height: 50px;
+            border-radius: 5px;
+        }
+
+        .enemyHealthBarFront {
+            background-color: red;
+            width: 100%;
+            /*health amount*/
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        #tutorialRunBorder {
+            position: absolute;
+            top: 25%;
+            left: 20%;
+            width: 50%;
+            height: 40%;
+            border-color: #25131a;
+            border: 10px solid red;
+            background-color: red;
+            border-radius: 5px;
+        }
+
+        #tutorialRun {
+            position: relative;
+            top: 10%;
+            width: 90%;
+            height: 90%;
+            margin: auto;
+        }
+
+        #tipIconContainer {
+            position: absolute;
+            z-index: 1;
+            width: 100%;
+            top: -50px;
+        }
+
+        #tipIcon {
+            display: block;
+            margin: auto;
+        }
+
+        .tutorialFont {
+            font-family: "Pixelify Sans", Courier, monospace;
+            font-size: 30px;
+            margin-top: 2%;
+        }
+    </style>
+    <div class="prompt-padding">
+        <div class="prompt">
+            <textarea id="inputCode" name="inputCode" rows="4" cols="1">run(left,2)run(up,2)</textarea>
+        </div>
+    </div>
+
+    <div class="playerInfo">
+        <div class="playerProfilePic"><img id="playerFrame" src="sprites/Soldier/Soldier/soldierFrame.png"></div>
+        <div class="playerHealthBarContainer">
+            <div class="playerHealthBarBack">
+                <div class="playerHealthBarFront" id="playerHealthBarFront"></div>
+            </div>
+        </div>
+        <div class="playerManaBarContainer">
+            <div class="playerManaBarBack">
+                <div class="playerManaBarFront"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="enemyHealthBar">
+        <div class="enemyHealthBarBack">
+            <div class="enemyHealthBarFront" id="enemyHealthBarFront"></div>
+        </div>
+    </div>
+
+
+
+    <button type="button" id="actionButton">Ação</button>
+
+    <!-- card tutorial run -->
+    <div id="tutorialRunBorder">
+        <div id="tipIconContainer">
+            <img src="sprites/interface/tipIcon.png" id="tipIcon" alt="tipIcon" width="100px" height="100px">
+        </div>
+        <div id="tutorialRun">
+            <p class="tutorialFont">Escreva o comando run[top,down,right,left],[1,2,3] no terminal 
+                para movimentar o personagem ao longo do cenário</p>
+        </div>
+    </div>
+</body>
+
+</html>
