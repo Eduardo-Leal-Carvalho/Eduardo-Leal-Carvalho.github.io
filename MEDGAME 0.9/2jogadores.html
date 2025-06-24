@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2 Jogadores</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div class="titulo">
+        <p><img src="./img/medgame_png.png"></p>
+    </div>
+    <p>Insira o nome dos jogadores:</p>
+    <div class="jogadores">
+        <div class="jogadores" id="jogador1">
+            <form name="jogadores" action="./tabuleiro2p.html" onsubmit="validaCampos()" method="get" required>
+                <input type="text" id="jogador_1" name="jogador_1" value="Jogador 1" onfocus="this.value=''" maxlength="15">
+        </div>
+        <div class="jogadores" id="jogador2">
+                <input type="text" id="jogador_2" name="jogador_2" value="Jogador 2" onfocus="this.value=''" maxlength="15">
+        </div>
+        <br>
+        <!-- <a href="./individual.html"><button class="botao voltar">Voltar</button> -->
+        <input class="botao" type="submit" value="Começar!">
+            </form>
+    </div>
+    <script>
+        function validaCampos() {
+            if (document.forms["jogadores"]["jogador_1"].value.trim() == "") {
+                document.forms["jogadores"]["jogador_1"].value = "Jogador 1"
+            }
+            if (document.forms["jogadores"]["jogador_2"].value.trim() == "") {
+                document.forms["jogadores"]["jogador_2"].value = "Jogador 2"
+            }
+            return true;
+        } 
+    </script>
+</body>
+
+</html>

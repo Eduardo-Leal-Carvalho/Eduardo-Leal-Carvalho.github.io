@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedGame</title>
+  <link rel="stylesheet" href="dado.css">
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #75a656;
+    }
+
+    #medgame_container {
+      width: 100%;
+      height: 100vh;
+      max-width: 1920px;
+      max-height: 1080px;
+      min-width: 1280px;
+      min-height: 720px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #tabuleiro {
+      height: 100vh;
+      aspect-ratio: 16 / 9;
+      background: url("./img/tabuleiro_full_hd.png") no-repeat center center;
+      background-size: contain;
+      position: relative;
+    }
+
+    .peao {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      transform: translate(-50%, -50%);
+      transition: top 0.3s ease, left 0.3s ease;
+    }
+
+    .peao img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid white;
+      object-fit: cover;
+    }
+
+    #mensagem_vitoria {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #75a656;
+      padding: 20px;
+      border: 8px solid white;
+      color: white;
+      text-align: center;
+      display: none;
+      z-index: 10;
+    }
+
+    #mensagem_vitoria button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      font-family: Verdana;
+      text-transform: uppercase;
+      color: white;
+      border-radius: 12px;
+      background-color: rgb(0, 59, 0);
+      border: 2px solid;
+      border-color: white;
+      width: 250px;
+    }
+
+    .blur {
+      filter: blur(5px)
+    }
+
+    #info_jogadores {
+      position: absolute;
+      top: 1%;
+      left: 1%;
+      background-color: rgba(0, 59, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      color: white;
+      font-family: Verdana, sans-serif;
+      z-index: 5;
+    }
+
+    .jogador_info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .jogador_info:last-child {
+      margin-bottom: 0;
+    }
+
+    .jogador_info .peao_representacao {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid white;
+      margin-right: 10px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .jogador_info .nome_jogador {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .jogador_info .posicao_jogador {
+      font-size: 0.9em;
+    }
+
+    #div_pergunta {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #75a656;
+      padding: 20px;
+      border: 8px solid white;
+      color: white;
+      text-align: center;
+      display: none;
+      z-index: 10;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    #div_pergunta h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    #div_pergunta .opcoes_pergunta {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    #div_pergunta .opcoes_pergunta label {
+      display: block;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    #div_pergunta button {
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      font-family: Verdana;
+      text-transform: uppercase;
+      color: white;
+      border-radius: 12px;
+      background-color: rgb(0, 59, 0);
+      border: 2px solid;
+      border-color: white;
+    }
+
+    #feedback_pergunta {
+      margin-top: 15px;
+      font-weight: bold;
+      display: none;
+      background-color: white;
+      font-size: 1.5em;
+      border-radius: 25%;
+      /* Inicia oculto */
+    }
+
+
+    #jogador_da_vez {
+      position: absolute;
+      top: 2%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 59, 0, 0.85);
+      color: white;
+      padding: 10px 25px;
+      border-radius: 10px;
+      font-family: Verdana, sans-serif;
+      font-size: 1.2em;
+      border: 2px solid white;
+      z-index: 5;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="medgame_container">
+
+
+    <div id="tabuleiro">
+
+      <div id="info_jogadores"></div>
+      <div id="jogador_da_vez"></div>
+
+      <div class="peao" id="peao1"></div>
+      <div class="peao" id="peao2"></div>
+      
+
+      <div id="dice" data-side="1">
+        <div class="sides side-1">
+          <span class="dot dot-1"></span>
+        </div>
+        <div class="sides side-2">
+          <span class="dot dot-1"></span>
+          <span class="dot dot-2"></span>
+        </div>
+        <div class="sides side-3">
+          <span class="dot dot-1"></span>
+          <span class="dot dot-2"></span>
+          <span class="dot dot-3"></span>
+        </div>
+        <div class="sides side-4">
+          <span class="dot dot-1"></span>
+          <span class="dot dot-2"></span>
+          <span class="dot dot-3"></span>
+          <span class="dot dot-4"></span>
+        </div>
+        <div class="sides side-5">
+          <span class="dot dot-1"></span>
+          <span class="dot dot-2"></span>
+          <span class="dot dot-3"></span>
+          <span class="dot dot-4"></span>
+          <span class="dot dot-5"></span>
+        </div>
+        <div class="sides side-6">
+          <span class="dot dot-1"></span>
+          <span class="dot dot-2"></span>
+          <span class="dot dot-3"></span>
+          <span class="dot dot-4"></span>
+          <span class="dot dot-5"></span>
+          <span class="dot dot-6"></span>
+        </div>
+      </div>
+      <div id="diceResult">Clique para rolar</div>
+    </div>
+
+    <div id="mensagem_vitoria">
+      <h2>Parabéns, <span id="jogador_vencedor"></span>!<br>Você venceu a partida!</h2>
+      <button id="btn_voltar">Voltar ao Início</button>
+      <button id="btn_jogar_novamente">Jogar Novamente</button>
+    </div>
+
+    <div id="div_pergunta">
+      <h3 id="texto_pergunta"></h3>
+      <div id="opcoes_pergunta" class="opcoes_pergunta">
+      </div>
+      <button id="btn_confirmar_resposta">Confirmar!</button>
+      <div id="feedback_pergunta"></div>
+    </div>
+  </div>
+
+  <script>
+    const totalCasas = 52;
+    const casas = [
+      { y: 67.61, x: 9.37 },        //00 - Largada
+      { y: 78.52, x: 13.06 },
+      { y: 78.03, x: 19.48 },
+      { y: 72.32, x: 23.04 },
+      { y: 62.90, x: 21.16 },
+      { y: 57.19, x: 15.58 },
+      { y: 51.74, x: 9.65 },
+      { y: 42.93, x: 5.25 },
+      { y: 31.65, x: 6.72 },
+      { y: 24.21, x: 12.93 },
+      { y: 21.85, x: 21.30 },
+      { y: 27.43, x: 28.13 },
+      { y: 35.86, x: 31.20 },
+      { y: 46.65, x: 30.78 },
+      { y: 56.57, x: 27.57 },
+      { y: 67.24, x: 27.78 },
+      { y: 73.19, x: 34.62 },
+      { y: 68.11, x: 41.18 },
+      { y: 58.06, x: 35.39 },
+      { y: 49.50, x: 39.99 },
+      { y: 52.36, x: 47.18 },
+      { y: 62.03, x: 48.50 },
+      { y: 72.20, x: 49.41 },
+      { y: 79.39, x: 56.10 },
+      { y: 78.28, x: 63.78 },
+      { y: 69.97, x: 69.36 },
+      { y: 59.18, x: 69.43 },
+      { y: 51.61, x: 63.78 },
+      { y: 47.89, x: 56.80 },
+      { y: 45.04, x: 49.06 },
+      { y: 40.45, x: 42.85 },
+      { y: 30.04, x: 41.25 },
+      { y: 22.35, x: 45.71 },
+      { y: 20.61, x: 53.24 },
+      { y: 27.43, x: 59.38 },
+      { y: 37.23, x: 61.41 },
+      { y: 38.96, x: 68.38 },
+      { y: 35.62, x: 73.19 },
+      { y: 25.82, x: 74.87 },
+      { y: 14.91, x: 72.36 },
+      { y: 5.98, x: 75.08 },
+      { y: 2.26, x: 81.84 },
+      { y: 4.49, x: 89.03 },
+      { y: 14.41, x: 91.05 },
+      { y: 25.08, x: 89.45 },
+      { y: 35.86, x: 87.77 },
+      { y: 41.57, x: 95.45 },
+      { y: 51.99, x: 94.75 },
+      { y: 58.81, x: 88.40 },
+      { y: 69.47, x: 87.98 },
+      { y: 74.68, x: 84.29 },
+      { y: 76.66, x: 77.31 }        //51 - Chegada
+    ];
+    const peoes = [
+      { el: document.getElementById('peao1'), pos: 0, nome: "Jogador 1", avatar: "img/avatar1.png", prevPos: 0 },
+      { el: document.getElementById('peao2'), pos: 0, nome: "Jogador 2", avatar: "img/avatar2.png", prevPos: 0 },
+      
+    ];
+
+    // Adiciona imagens nos peões
+    peoes.forEach(peao => {
+      const img = document.createElement('img');
+      img.src = peao.avatar;
+      img.alt = peao.nome;
+      peao.el.appendChild(img);
+    });
+
+
+    // Pega os nomes dos jogadores através das informações contidas na url
+    function getUrlParams() {
+      const params = {};
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      for (const [key, value] of urlParams.entries()) {
+        params[key] = value;
+      }
+      return params;
+    }
+
+    const urlParams = getUrlParams();
+
+    peoes.forEach((peao, index) => {
+      const paramName = `jogador_${index + 1}`;
+      if (urlParams[paramName] && urlParams[paramName].trim() !== "") {
+        peao.nome = decodeURIComponent(urlParams[paramName].trim());
+      }
+    });
+
+    const perguntas = [
+      {
+        pergunta: "De quantas em quantas horas devemos fazer a mudança de decúbito?",
+        opcoes: ["1 Hora", "2 Horas", "2.5 Horas", "3 Horas"],
+        resposta: "2 Horas"
+      },
+      {
+        pergunta: "Qual é a finalidade da Sistematização da Assistência de Enfermagem (SAE)?",
+        opcoes: ["Substituir o plano médico", "Controlar os gastos hospitalares", "Organizar e padronizar a assistência de enfermagem", "Aumentar a carga de trabalho da equipe"],
+        resposta: "Organizar e padronizar a assistência de enfermagem"
+      },
+      {
+        pergunta: "Qual é a via de administração mais rápida para medicamentos?",
+        opcoes: ["Oral", "Intramuscular", "Subcutânea", "Intravenosa"],
+        resposta: "Intravenosa"
+      },
+      {
+        pergunta: "Qual item abaixo é considerado equipamento de proteção individual (EPI)?",
+        opcoes: ["Luvas descartáveis", "Termômetro", "Jaleco", "Estetoscópio"],
+        resposta: "Luvas descartáveis"
+      },
+      {
+        pergunta: "Qual dos sinais vitais deve ser aferido por palpação ou uso de estetoscópio?",
+        opcoes: ["Temperatura", "Frequência respiratória", "Frequência cardíaca", "Nível de consciência"],
+        resposta: "Frequência cardíaca"
+      },
+      {
+        pergunta: "Qual é a função da clorexidina a 2% em procedimentos de enfermagem?",
+        opcoes: ["Hidratante", "Antisséptico", "Analgésico", "Sedativo"],
+        resposta: "Antisséptico"
+      },
+      {
+        pergunta: "Qual estrutura é responsável pela regulamentação da prática da enfermagem no Brasil?",
+        opcoes: ["SUS", "OMS", "COFEN", "ANVISA"],
+        resposta: "COFEN"
+      },
+      {
+        pergunta: "A punção venosa periférica é indicada principalmente para:",
+        opcoes: ["Realizar cirurgia", "Aplicar oxigênio", "Acesso para administração medicamentosa", "Medir pressão arterial"],
+        resposta: "Acesso para administração medicamentosa"
+      },
+      {
+        pergunta: "O que caracteriza negligência na enfermagem?",
+        opcoes: ["Realizar um procedimento sem habilidade", "Esquecer ou omitir cuidados essenciais", "Agir com imprudência deliberada", "Ter dúvidas sobre a conduta"],
+        resposta: "Esquecer ou omitir cuidados essenciais"
+      },
+      {
+        pergunta: "Qual das vias abaixo é considerada parenteral?",
+        opcoes: ["Oral", "Sublingual", "Retal", "Intramuscular"],
+        resposta: "Intramuscular"
+      },
+      {
+        pergunta: "Qual é a posição indicada para o paciente em choque hipovolêmico?",
+        opcoes: ["Fowler", "Sims", "Trendelemburg", "Genupeitoral"],
+        resposta: "Trendelemburg"
+      },
+      {
+        pergunta: "O termo “imunização ativa” refere-se a:",
+        opcoes: ["Tratamento com antibióticos", "Uso de antitérmicos", "Administração de vacinas", "Transfusão de sangue"],
+        resposta: "Administração de vacinas"
+      },
+      {
+        pergunta: "Em que situação o sigilo profissional pode ser quebrado legalmente?",
+        opcoes: ["Sempre que o paciente pedir", "Quando for menor de idade", "Por ordem judicial", "Em conversas com colegas de trabalho"],
+        resposta: "Por ordem judicial"
+      },
+      {
+        pergunta: "Qual é a sequência correta do processo de enfermagem?",
+        opcoes: ["Planejamento, execução, avaliação, diagnóstico e histórico", "Histórico, diagnóstico, planejamento, execução e avaliação", "Diagnóstico, planejamento, histórico, execução e avaliação", "Execução, histórico, diagnóstico, avaliação e planejamento"],
+        resposta: "Histórico, diagnóstico, planejamento, execução e avaliação"
+      },
+      {
+        pergunta: "A escara de decúbito é causada por:",
+        opcoes: ["Má alimentação", "Infecção bacteriana", "Pressão prolongada sobre a pele", "Falta de oxigenação no sangue"],
+        resposta: "Pressão prolongada sobre a pele"
+      },
+      {
+        pergunta: "O que é enfermagem baseada em evidências?",
+        opcoes: ["Cópia de práticas de outros hospitais", "Prática guiada por experiências pessoais", "Cuidado embasado em pesquisas científicas e dados clínicos", "Atendimento padronizado e igual para todos os pacientes"],
+        resposta: "Cuidado embasado em pesquisas científicas e dados clínicos"
+      },
+      {
+        pergunta: "Qual procedimento é indicado para reduzir risco de flebite em cateteres periféricos?",
+        opcoes: ["Troca de curativo a cada 72 horas", "Afastar o cateter da luz direta", "Irrigação diária com soro hipertônico", "Manter a punção por tempo indeterminado"],
+        resposta: "Troca de curativo a cada 72 horas"
+      },
+      {
+        pergunta: "A principal medida de prevenção de infecção hospitalar é:",
+        opcoes: ["Uso de antibióticos", "Uso de máscara N95", "Lavagem das mãos", "Ventilação do ambiente"],
+        resposta: "Lavagem das mãos"
+      },
+      {
+        pergunta: "Qual das alternativas é uma função privativa do enfermeiro?",
+        opcoes: ["Administração de medicamentos", "Banho no leito", "Diagnóstico de enfermagem", "Aferição de sinais vitais"],
+        resposta: "Diagnóstico de enfermagem"
+      },
+      {
+        pergunta: "O que significa a sigla SAMU?",
+        opcoes: ["Sistema Avançado Médico de Urgência", "Serviço de Atendimento Médico Unificado", "Sistema de Atendimento Móvel de Urgência", "Serviço de Atendimento Móvel de Urgência"],
+        resposta: "Sistema de Atendimento Móvel de Urgência"
+      },
+      {
+        pergunta: "Qual profissional está autorizado a prescrever cuidados de enfermagem?",
+        opcoes: ["Auxiliar de enfermagem", "Técnico de enfermagem", "Enfermeiro", "Médico"],
+        resposta: "Enfermeiro"
+      },
+      {
+        pergunta: "Em qual local é comum se medir a temperatura axilar?",
+        opcoes: ["Dentro do ouvido", "Sob a língua", "Na axila", "No reto"],
+        resposta: "Na axila"
+      },
+      {
+        pergunta: "A anamnese é realizada em qual etapa da assistência de enfermagem?",
+        opcoes: ["Diagnóstico", "Histórico de enfermagem", "Execução", "Avaliação"],
+        resposta: "Histórico de enfermagem"
+      },
+      {
+        pergunta: "Qual é a posição recomendada para alimentação de pacientes com risco de aspiração?",
+        opcoes: ["Trendelemburg", "Decúbito dorsal", "Fowler", "Genupeitoral"],
+        resposta: "Fowler"
+      },
+      {
+        pergunta: "Qual conduta o enfermeiro deve adotar diante de uma intercorrência grave?",
+        opcoes: ["Ignorar e continuar os cuidados de rotina", "Registrar e relatar ao médico", "Pedir ajuda ao técnico de enfermagem", "Esperar o turno seguinte"],
+        resposta: "Registrar e relatar ao médico"
+      },
+      {
+        pergunta: "Qual é o intervalo ideal para trocar um curativo limpo em ferida cirúrgica?",
+        opcoes: ["A cada 2 horas", "Uma vez por semana", "A cada 48 a 72 horas, ou conforme prescrição", "Somente se houver sangramento"],
+        resposta: "A cada 48 a 72 horas, ou conforme prescrição"
+      },
+      {
+        pergunta: "Qual é a via de administração menos utilizada para tratamentos farmacológicos?",
+        opcoes: ["Via intradérmica", "Via endovenosa", "Via subcutanea", "Via oral"],
+        resposta: "Via intradérmica"
+      },
+      {
+        pergunta: "Qual é o orgão mais afetado pelo uso indiscriminado de paracetamol?",
+        opcoes: ["Fígado", "Intestino", "Pâncreas", "Pulmão"],
+        resposta: "Fígado"
+      },
+      {
+        pergunta: "Qual destas vias de administração é mais adequada quando desejamos que a medicação não sofra interferências do meio enteral?",
+        opcoes: ["Vias parentais", "Via oral", "Via nasal", "Via subcutânea"],
+        resposta: "Vias parentais"
+      },
+      {
+        pergunta: "Qual é a principal função da enfermagem na prevenção de infecções hospitalares?",
+        opcoes: ["Administrar antibióticos profiláticos", "Realizar assepsia adequada das mãos", "Isolar pacientes com infecções", "Limpar superfícies hospitalares"],
+        resposta: "Realizar assepsia adequada das mãos"
+      },
+      {
+        pergunta: "Ao realizar a troca de roupa de cama de um paciente acamado, qual é a prática essencial para garantir conforto e segurança?",
+        opcoes: ["Posicionar o material de troca de forma prática sobre o leito de outro paciente desocupado", "Manter a roupa de cama dobrada e organizada na ordem de instalação", "Esticar os lençóis com as mãos após instalá-los", "Colocar o lençol inferior e superior ao mesmo tempo"],
+        resposta: "Manter a roupa de cama dobrada e organizada na ordem de instalação"
+      },
+      {
+        pergunta: "Qual é a posição recomendada para a administração de um enema em pacientes adultos?",
+        opcoes: ["Posição de Sims", "Posição supina", "Posição de Fowler alto", "Posição de Trendelenburg"],
+        resposta: "Posição de Sims"
+      },
+      {
+        pergunta: "Ao consultar o prontuário de um paciente com diagnóstico de trombose venosa profunda (TVP), qual é a principal preocupação do enfermeiro?",
+        opcoes: ["Acompanhar o estímulo de movimentação contínua e fisioterapia", "Evitar testes de enchimento capilar ou verificação de perfusão", "Realizar teste de Bandeira e Bancroft em todos os membros", "Verificar padrão respiratório periodicamente devido ao risco de tromboembolia pulmonar"],
+        resposta: "Verificar padrão respiratório periodicamente devido ao risco de tromboembolia pulmonar"
+      },
+      {
+        pergunta: "Qual exame laboratorial é essencial para avaliar a função renal e monitorar o risco de insuficiência renal?",
+        opcoes: ["Hemograma completo", "Ureia e creatinina sérica", "Glicemia de jejum", "Bilirrubina total e frações"],
+        resposta: "Ureia e creatinina sérica"
+      },
+      {
+        pergunta: "Durante a admissão de um paciente com diagnóstico de sepse grave, qual é a conduta inicial mais adequada no manejo da sepse?",
+        opcoes: ["Administrar antibióticos após confirmação do agente etiológico por hemoculturas", "Realizar reposição volêmica com 30 mL/kg de solução cristaloide nas primeiras 3 horas", "Priorizar o uso de medicamentos vasopressores antes da expansão volêmica", "Realizar transfusão sanguínea profilática para melhorar a perfusão tecidual"],
+        resposta: "Realizar reposição volêmica com 30 mL/kg de solução cristaloide nas primeiras 3 horas"
+      },
+      {
+        pergunta: "Em um paciente com hemorragia externa grave no membro inferior esquerdo, qual é a medida prioritária para controlar o sangramento?",
+        opcoes: ["Realizar imobilização do membro e aguardar a chegada do suporte avançado", "Aplicar compressão manual direta sobre o ferimento com gaze estéril", "Lavar o ferimento com solução salina e cobri-lo com curativo oclusivo", "Identificar o tipo sanguíneo da vítima antes de qualquer intervenção"],
+        resposta: "Aplicar compressão manual direta sobre o ferimento com gaze estéril"
+      },
+      {
+        pergunta: "Ao transferir um paciente acamado para uma cadeira de rodas, qual é a conduta correta para evitar lesões no profissional e no paciente?",
+        opcoes: ["Realizar o movimento sozinho, utilizando força dos braços", "Pedir ajuda, dobrar os joelhos e manter a coluna reta durante a movimentação", "Manter as pernas esticadas e inclinar a coluna para frente para impulsionar o paciente", "Movimentar o paciente rapidamente para reduzir o esforço físico"],
+        resposta: "Pedir ajuda, dobrar os joelhos e manter a coluna reta durante a movimentação"
+      },
+      {
+        pergunta: "Qual é a conduta correta ao trocar a bolsa de colostomia?",
+        opcoes: ["A abertura do dispositivo deve ser ajustada de acordo com o tamanho do estoma, deixando uma margem mínima de pele exposta", "A bolsa deve ser trocada apenas quando estiver completamente cheia", "É necessário aplicar pomada sobre o estoma antes de colocar a bolsa", "A troca deve ser realizada por profissionais especializados apenas"],
+        resposta: "A abertura do dispositivo deve ser ajustada de acordo com o tamanho do estoma, deixando uma margem mínima de pele exposta"
+      },
+      {
+        pergunta: "Qual é a principal atribuição do Conselho Federal de Enfermagem (Cofen)?",
+        opcoes: ["Fiscalizar a prática médica", "Estabelecer diretrizes para a prática da enfermagem", "Regular a atuação dos farmacêuticos", "Administrar hospitais de grande porte"],
+        resposta: "Estabelecer diretrizes para a prática da enfermagem"
+      },
+      {
+        pergunta: "Qual dos seguintes é um exemplo de tarefa que faz parte da rotina do cuidador de enfermagem?",
+        opcoes: ["Deixar de comunicar à equipe de saúde sobre mudanças no estado de saúde da pessoa cuidada", "Atuar como elo entre a pessoa cuidada, a família e a equipe de saúde", "Escutar, estar atento e ser solidário com a pessoa cuidada", "Realizar mudanças de posição na cama e na cadeira e massagens de conforto"],
+        resposta: "Realizar mudanças de posição na cama e na cadeira e massagens de conforto"
+      },
+      {
+        pergunta: "A avaliação da linguagem de uma criança deve considerar:",
+        opcoes: ["A quantidade de palavras que a criança conhece", "A clareza da pronúncia das palavras", "O uso adequado da linguagem em contextos sociais", "A capacidade de ler e escrever"],
+        resposta: "O uso adequado da linguagem em contextos sociais"
+      },
+      {
+        pergunta: "Qual é a importância de avaliar o vínculo afetivo entre a criança e seus cuidadores?",
+        opcoes: ["Identificar possíveis abusos", "Avaliar o desenvolvimento emocional da criança", "Determinar a necessidade de intervenção psicológica", "Verificar a adequação dos cuidados maternos"],
+        resposta: "Avaliar o desenvolvimento emocional da criança"
+      },
+      {
+        pergunta: "Durante a consulta de enfermagem, é essencial observar:",
+        opcoes: ["Somente os sinais vitais da criança", "A interação da criança com o ambiente e com os outros", "A conformidade com o calendário vacinal", "A presença de doenças contagiosas"],
+        resposta: "A interação da criança com o ambiente e com os outros"
+      },
+      {
+        pergunta: "A triagem neonatal tem como objetivo:",
+        opcoes: ["etectar doenças metabólicas e genéticas precocemente", "Avaliar a adaptação da criança ao ambiente extrauterino", "Prescrever medicamentos preventivos", "Realizar exames laboratoriais de rotina"],
+        resposta: "etectar doenças metabólicas e genéticas precocemente"
+      },
+      {
+        pergunta: "O acompanhamento do calendário vacinal infantil é fundamental para:",
+        opcoes: ["Prevenir doenças imunopreveníveis", "Avaliar a resposta imunológica da criança", "Determinar a necessidade de reforço vacinal", "Observar possíveis efeitos adversos das vacinas"],
+        resposta: "Prevenir doenças imunopreveníveis"
+      },
+      {
+        pergunta: "A avaliação do desenvolvimento motor grosso de uma criança inclui:",
+        opcoes: ["Observar a capacidade de segurar objetos pequenos", "Avaliar a habilidade de caminhar e correr", "Verificar a coordenação olho-mão", "Observar a capacidade de falar palavras simples"],
+        resposta: "Avaliar a habilidade de caminhar e correr"
+      },
+      {
+        pergunta: "Qual é a principal preocupação ao avaliar o desenvolvimento social de uma criança?",
+        opcoes: ["Verificar a capacidade de brincar sozinha", "Avaliar a interação com outras crianças e adultos", "Observar a capacidade de seguir regras", "Determinar a necessidade de intervenção educacional"],
+        resposta: "Avaliar a interação com outras crianças e adultos"
+      },
+      {
+        pergunta: "A avaliação da visão de uma criança pode ser realizada por meio de:",
+        opcoes: ["este de acuidade visual", "Observação do reflexo pupilar", "Anamnese detalhada", "Exame oftalmológico completo"],
+        resposta: "este de acuidade visual"
+      },
+      {
+        pergunta: "A avaliação auditiva de uma criança deve considerar:",
+        opcoes: ["A resposta a sons e vozes", "A presença de secreção no ouvido", "A história de infecções de ouvido", "A capacidade de falar palavras claras"],
+        resposta: "A resposta a sons e vozes"
+      }
+    ];
+
+
+    function atualizarJogadorDaVez() {
+      const jogador = peoes[jogadorAtual];
+      const divJogadorDaVez = document.getElementById('jogador_da_vez');
+      divJogadorDaVez.innerHTML = `Jogando agora: <br><strong>${jogador.nome}</strong>`;
+    }
+
+
+    // Referência ao div de informações dos jogadores
+    const infoJogadoresDiv = document.getElementById('info_jogadores');
+    const jogadorDaVezDiv = document.getElementById('jogador_da_vez');
+
+    // Elementos da pergunta
+    const divPergunta = document.getElementById('div_pergunta');
+    const textoPergunta = document.getElementById('texto_pergunta');
+    const opcoesPergunta = document.getElementById('opcoes_pergunta');
+    const btnConfirmarResposta = document.getElementById('btn_confirmar_resposta');
+    const feedbackPergunta = document.getElementById('feedback_pergunta');
+
+    let perguntaAtual = null;
+    let respostaCorreta = false;
+    let ultimaRolagem = 0;
+    let perguntasRespondidasCorretamenteIndices = [];
+
+    // Função para criar e exibir as informações iniciais dos jogadores
+    function criarInfoJogadores() {
+      peoes.forEach((peao, index) => {
+        const jogadorInfoDiv = document.createElement('div');
+        jogadorInfoDiv.classList.add('jogador_info');
+        jogadorInfoDiv.id = `info_jogador_${index + 1}`; // ID único para cada jogador
+
+        const peaoRepresentacao = document.createElement('div');
+        peaoRepresentacao.classList.add('peao_representacao');
+        peaoRepresentacao.style.backgroundImage = `url(${peao.avatar})`; // Define a cor do peão
+
+        const nomeJogadorSpan = document.createElement('span');
+        nomeJogadorSpan.classList.add('nome_jogador');
+        nomeJogadorSpan.textContent = peao.nome;
+
+        const posicaoJogadorSpan = document.createElement('span');
+        posicaoJogadorSpan.classList.add('posicao_jogador');
+        posicaoJogadorSpan.textContent = `Casa: ${peao.pos}`;
+
+        jogadorInfoDiv.appendChild(peaoRepresentacao);
+        jogadorInfoDiv.appendChild(nomeJogadorSpan);
+        jogadorInfoDiv.appendChild(posicaoJogadorSpan);
+        infoJogadoresDiv.appendChild(jogadorInfoDiv);
+      });
+    }
+
+    // Função para atualizar as posições exibidas
+    function atualizarInfoJogadores() {
+      peoes.forEach((peao, index) => {
+        const posicaoJogadorSpan = document.querySelector(`#info_jogador_${index + 1} .posicao_jogador`);
+        if (posicaoJogadorSpan) {
+          posicaoJogadorSpan.textContent = `Casa: ${peao.pos}`;
+        }
+      });
+    }
+
+    // Função para criar as informações iniciais
+    criarInfoJogadores();
+
+    function atualizarPosicoes() {
+      // Agrupa peões por posição
+      const grupos = {};
+      peoes.forEach((p) => {
+        const casa_atual = p.pos;
+        if (!grupos[casa_atual]) grupos[casa_atual] = [];
+        grupos[casa_atual].push(p);
+      });
+
+      // Para cada grupo de peões em uma mesma casa, efetua deslocamento horizontal
+      Object.entries(grupos).forEach(([pos, grupo]) => {
+        const c = casas[pos % casas.length];
+        const n = grupo.length;
+        const deslocamento = 2.5;
+
+        grupo.forEach((p, i) => {
+          const deslocamento_horizontal = (i - (n - 1) / 2) * deslocamento;
+          const deslocamento_vertical = 0;
+          p.el.style.left = (c.x + deslocamento_horizontal) + '%';
+          p.el.style.top = (c.y + deslocamento_vertical) + '%';
+        });
+      });
+      // Função para atualizar as informações dos jogadores após o movimento
+      atualizarInfoJogadores();
+    }
+
+    atualizarPosicoes();
+
+    let jogadorAtual = 0;
+    atualizarJogadorDaVez();
+    let movimentoEmAndamento = false;
+    let jogoFinalizado = false;
+
+    const tabuleiro = document.getElementById('tabuleiro');
+    const mensagemVitoria = document.getElementById('mensagem_vitoria');
+    const jogadorVencedor = document.getElementById('jogador_vencedor');
+    const btnVoltar = document.getElementById('btn_voltar');
+    const btnJogarNovamente = document.getElementById('btn_jogar_novamente');
+
+    let dice = document.getElementById('dice');
+    var outputDiv = document.getElementById('diceResult');
+
+    // Eu não fiz este dado \o/
+    function rolaDado() {
+      if (dice.classList.contains('reRoll') || movimentoEmAndamento || jogoFinalizado || divPergunta.style.display === 'block') return;
+
+      let result = Math.floor(Math.random() * 6) + 1;
+      dice.dataset.side = result;
+      dice.classList.add("reRoll");
+
+      console.log(result);
+      ultimaRolagem = result;
+
+      outputDiv.classList.remove("reveal");
+      outputDiv.classList.add("hide");
+      outputDiv.innerHTML = result;
+      outputDiv.classList.add("reveal");
+      dice.classList.remove("reRoll");
+
+      setTimeout(function () {
+        movimentarPeao(peoes[jogadorAtual], result);
+        // O jogadorAtual será atualizado depois da resposta da pergunta
+      }, 1500);
+    }
+
+    dice.addEventListener("click", rolaDado);
+
+    function movimentarPeao(peao, passos) {
+      movimentoEmAndamento = true;
+      let passoAtual = 0;
+      const posicaoAtual = peao.pos;
+      peao.prevPos = posicaoAtual; // Armazena a posição anterior
+      const posicaoFinal = totalCasas - 1;
+
+      function moverParaProximaCasa() {
+        if (passoAtual < passos) {
+          const proximaPosicao = peao.pos + 1;
+
+          if (posicaoAtual < posicaoFinal) {
+            if (proximaPosicao <= posicaoFinal) {
+              peao.pos = proximaPosicao;
+            } else {
+              peao.pos = posicaoFinal;
+              passoAtual = passos; // Força a saída do loop
+            }
+          }
+
+          atualizarPosicoes(); // Atualiza a posição visual do peão e as informações
+          passoAtual++;
+          setTimeout(moverParaProximaCasa, 300);
+        } else {
+          movimentoEmAndamento = false;
+          // Só faz pergunta se não for na casa de largada ou chegada
+          if (peao.pos > 0 && peao.pos < totalCasas - 1) {
+            exibirPerguntaAleatoria();
+          } else {
+            verificarVitoria();
+            jogadorAtual = (jogadorAtual + 1) % peoes.length;
+            atualizarJogadorDaVez();
+          }
+        }
+      }
+
+      moverParaProximaCasa();
+    }
+
+    function exibirPerguntaAleatoria() {
+      let randomIndex;
+      let perguntaJaRespondida = true;
+
+      if (perguntasRespondidasCorretamenteIndices.length === perguntas.length) {
+        //Para o caso de todas as perguntas terem sido respondidas
+        console.log("Todas as perguntas foram respondidas corretamente. Nenhuma nova pergunta para exibir.");
+        jogadorAtual = (jogadorAtual + 1) % peoes.length;
+        atualizarJogadorDaVez();
+        // Habilita o dado novamente
+        dice.style.pointerEvents = 'auto';
+        return;
+      }
+
+      while (perguntaJaRespondida) {
+        randomIndex = Math.floor(Math.random() * perguntas.length);
+        if (!perguntasRespondidasCorretamenteIndices.includes(randomIndex)) {
+          perguntaJaRespondida = false;
+        }
+      }
+
+      perguntaAtual = perguntas[randomIndex];
+      // Armazena o índice da pergunta atual
+      perguntaAtual.index = randomIndex;
+
+      textoPergunta.textContent = perguntaAtual.pergunta;
+      opcoesPergunta.innerHTML = ''; // Limpa as opções anteriores
+      feedbackPergunta.style.display = 'none'; // Oculta feedback anterior
+
+      perguntaAtual.opcoes.forEach((opcao, index) => {
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'resposta_pergunta';
+        input.value = opcao;
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(opcao));
+        opcoesPergunta.appendChild(label);
+      });
+
+      divPergunta.style.display = 'block';
+      tabuleiro.classList.add('blur');
+      // Desabilita o dado enquanto a pergunta está ativa
+      dice.style.pointerEvents = 'none';
+    }
+
+    btnConfirmarResposta.addEventListener('click', () => {
+      const selectedOption = document.querySelector('input[name="resposta_pergunta"]:checked');
+
+      if (!selectedOption) {
+        feedbackPergunta.textContent = "Por favor, selecione uma resposta.";
+        feedbackPergunta.style.color = "yellow";
+        feedbackPergunta.style.display = 'block';
+        return;
+      }
+
+      if (selectedOption.value === perguntaAtual.resposta) {
+        feedbackPergunta.textContent = "Resposta CORRETA, parabéns!";
+        feedbackPergunta.style.color = "rgb(24, 213, 0)";
+        respostaCorreta = true;
+        // Adiciona o índice da pergunta respondida corretamente à lista
+        if (!perguntasRespondidasCorretamenteIndices.includes(perguntaAtual.index)) {
+          perguntasRespondidasCorretamenteIndices.push(perguntaAtual.index);
+        }
+      } else {
+        feedbackPergunta.textContent = `Resposta ERRADA! Voltando ${ultimaRolagem} casa(s).`;
+        feedbackPergunta.style.color = "rgb(219, 0, 0)";
+        respostaCorreta = false;
+      }
+      feedbackPergunta.style.display = 'block';
+
+      setTimeout(() => {
+        divPergunta.style.display = 'none';
+        tabuleiro.classList.remove('blur');
+        dice.style.pointerEvents = 'auto';
+
+        if (!respostaCorreta) {
+          // Retorna à posição anterior
+          peoes[jogadorAtual].pos = peoes[jogadorAtual].prevPos;
+          atualizarPosicoes();
+        }
+        verificarVitoria();
+        // Passa para o próximo jogador
+        jogadorAtual = (jogadorAtual + 1) % peoes.length;
+        atualizarJogadorDaVez();
+      }, 2000);
+    });
+
+
+    function verificarVitoria() {
+      // Verifica se algum peão chegou na última casa
+      const peaoVencedor = peoes.find(p => p.pos === totalCasas - 1);
+      if (peaoVencedor) {
+        finalizarJogo(peaoVencedor);
+      }
+    }
+
+    function finalizarJogo(peao) {
+      jogoFinalizado = true;
+
+      // Desabilita as interações com o tabuleiro e o dado
+      tabuleiro.style.pointerEvents = 'none';
+      dice.style.pointerEvents = 'none';
+
+      // Coloca um efeito de desfoque quando o jogo acaba
+      tabuleiro.classList.add('blur');
+
+      jogadorVencedor.textContent = peao.nome;
+      mensagemVitoria.style.display = 'block';
+      document.getElementById('jogador_da_vez').style.display = 'none';
+    }
+
+    btnVoltar.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    btnJogarNovamente.addEventListener('click', () => {
+      reiniciarJogo();
+    });
+
+    function reiniciarJogo() {
+      window.location.reload();
+    }
+
+  </script>
+</body>
+
+</html>
